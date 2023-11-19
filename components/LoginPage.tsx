@@ -21,6 +21,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [installedSnackbar, setInstalledSnackbar] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
   const [loader, setLoader] = useState(false);
   const [error, setError] = useState({
@@ -41,12 +42,21 @@ export default function LoginPage() {
     if (!mobileScreen) {
       setIsMobile(false);
     } else {
-      setSnackbarOpen(true);
-      window.addEventListener("beforeinstallprompt", (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        listenToUserAction();
-      });
+      let appInstalled = localStorage.getItem("app-installed");
+      if (!appInstalled) {
+        setSnackbarOpen(true);
+        window.addEventListener("beforeinstallprompt", (e) => {
+          localStorage.removeItem("app-installed");
+          e.preventDefault();
+          deferredPrompt = e;
+          listenToUserAction();
+        });
+
+        window.addEventListener("appinstalled", () => {
+          setInstalledSnackbar(true);
+          localStorage.setItem("app-installed", "true");
+        });
+      }
     }
   }, [isMobile]);
 
@@ -61,7 +71,6 @@ export default function LoginPage() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choice: any) => {
       if (choice.outcome === "accepted") {
-        console.log("User accepted");
       } else {
         console.log("User dismissed");
       }
@@ -141,6 +150,17 @@ export default function LoginPage() {
     setSnackbarOpen(false);
   };
 
+  const handleInstalledSnackbarClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setInstalledSnackbar(false);
+  };
+
   const action = (
     <React.Fragment>
       <Button
@@ -197,6 +217,12 @@ export default function LoginPage() {
                     onClose={handleSnackbarClose}
                     message="Do you want to install REPM?"
                     action={action}
+                  />
+                  <Snackbar
+                    open={installedSnackbar}
+                    autoHideDuration={6000}
+                    message="Thank you for installing the app."
+                    onClose={handleInstalledSnackbarClose}
                   />
                   <div className="relative mt-2 mb-4">
                     <TextField
