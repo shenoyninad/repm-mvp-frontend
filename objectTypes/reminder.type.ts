@@ -1,5 +1,5 @@
 export interface Reminders {
-  reminderId: number;
+  ID: number;
   sender: number;
   receiver: number;
   startDate: string;

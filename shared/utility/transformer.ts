@@ -11,12 +11,12 @@ const transformOwnerProperties = (apiResponse: any[]): any[] => {
     const imageDataURL = `data:image/jpg;base64,${imageBuffer}`;
 
     const propertyToAdd = {
-      propertyId: property.propertyId,
+      ID: property.ID,
       name: property.name,
       address: property.address,
       description: property.description,
       pincode: property.pincode,
-      propertyType: property.propertyType,
+      type: property.type,
       roleType: RoleType.PROPERTYOWNER,
       image: imageDataURL,
       propertyManager: property.PropertyManager?.Manager?.username ?? "NA",
@@ -38,12 +38,12 @@ const transformManagerProperties = (apiResponse: any) => {
     const imageDataURL = `data:image/jpg;base64,${imageBuffer}`;
 
     const propertyToAdd = {
-      propertyId: property.propertyId,
+      ID: property.ID,
       name: property.Property?.name,
       address: property.Property?.address,
       description: property.Property?.description,
       pincode: property.Property?.pincode,
-      propertyType: property.Property?.propertyType,
+      type: property.Property?.type,
       roleType: RoleType.PROPERTYMANAGER,
       image: imageDataURL,
       propertyOwner: property.Property?.Owner?.username ?? "NA",

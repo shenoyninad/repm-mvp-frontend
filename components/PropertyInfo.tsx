@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import { Image } from "@chakra-ui/react";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 import Link from "next/link";
@@ -14,7 +15,7 @@ interface Props {
   propertyid: any;
   ownerid: any;
 }
-const Propertiesdetails: React.FC<Props> = (props) => {
+const PropertyInfo: React.FC<Props> = (props) => {
   return (
     <main>
       <Navbar text="Property Details" />
@@ -28,7 +29,7 @@ const Propertiesdetails: React.FC<Props> = (props) => {
         className="relative mt-20"
       >
         <Card sx={{ display: "flex" }} className="rounded-lg font-mono ">
-          <img
+          <Image
             className="h-48 w-80 object-fill"
             src={props.image}
             alt="Live from space album cover"
@@ -117,4 +118,4 @@ const Propertiesdetails: React.FC<Props> = (props) => {
     </main>
   );
 };
-export default Propertiesdetails;
+export default PropertyInfo;

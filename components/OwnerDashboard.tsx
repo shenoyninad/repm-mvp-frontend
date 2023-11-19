@@ -46,6 +46,7 @@ const OwnerDashboard = () => {
   useEffect(() => {
     if (session) {
       const populateDashboard = async (email: any) => {
+        //set backloader here to makesure the lines 83-85 is not shown first.
         const userProfileRes = await fetchUserByUsername(email);
         setUserProfile(userProfileRes.data);
 
@@ -67,6 +68,11 @@ const OwnerDashboard = () => {
           serviceRequestsByOwner.data;
 
         getDetailsOfServiceRequests(apiResponse);
+        const propertyCounts = getCountOfPropertiesByType(
+          transformedProperties
+        );
+        setPropertyTypeCount(propertyCounts.counts);
+        setPropertyCount(propertyCounts.totalCount);
       };
 
       populateDashboard(session?.user?.email);
@@ -75,6 +81,7 @@ const OwnerDashboard = () => {
         properties: PropertyCard[]
       ): { totalCount: number; counts: Record<PropertyType, number> } => {
         const counts: Record<PropertyType, number> = {
+          //These lines causing problems with showing no. of properties in dashboard
           [PropertyType.FLAT]: 0,
           [PropertyType.HOUSE]: 0,
           [PropertyType.VILLA]: 0,
@@ -82,7 +89,7 @@ const OwnerDashboard = () => {
 
         // Count properties based on propertyType
         properties.forEach((property) => {
-          counts[property.propertyType as PropertyType]++;
+          counts[property.type as PropertyType]++;
         });
 
         const totalCount = properties.length;
@@ -138,9 +145,6 @@ const OwnerDashboard = () => {
         setServiceRequestsByStatus(updatedServiceRequestsByStatus);
       };
       // Get the count of properties grouped by propertyType
-      const propertyCounts = getCountOfPropertiesByType(properties);
-      setPropertyTypeCount(propertyCounts.counts);
-      setPropertyCount(propertyCounts.totalCount);
     }
   }, [session]);
 

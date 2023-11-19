@@ -39,8 +39,8 @@ export default function Home({ params }: Props) {
   var user: User;
   const { data: session } = useSession();
   const [data, setData] = useState<typeof user | undefined>();
-  const [loader, setLoader] = useState(true);
   const [isMobile, setIsMobile] = useState(true);
+  const [loader, setLoader] = useState(true);
   const router = useRouter();
 
   function handleLogOut() {
@@ -49,11 +49,12 @@ export default function Home({ params }: Props) {
 
   useEffect(() => {
     if (session) {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (!isMobile) {
+      const mobileScreen = /iPhone|iPad|iPod|Android/i.test(
+        navigator.userAgent
+      );
+      if (!mobileScreen) {
         setIsMobile(false);
       }
-
       const getUserProfile = async (email: any) => {
         const userProfile = await fetchUserByUsername(email);
         const apiUrl = `/users/${userProfile?.data?.userId}`;
@@ -66,7 +67,7 @@ export default function Home({ params }: Props) {
 
       getUserProfile(session?.user?.email);
     }
-  }, [session]);
+  }, [session, isMobile]);
 
   return (
     <main className="flex min-h-screen flex-col items-center overflow-hidden">

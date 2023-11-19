@@ -32,20 +32,11 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (!isMobile) {
+    const mobileScreen = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (!mobileScreen) {
       setIsMobile(false);
     }
   }, [isMobile]);
-
-  let deferredPrompt;
-
-  window.addEventListener("beforeinstallprompt", function (event) {
-    // Prevent Chrome 67 and earlier from automatically showing the prompt
-    event.preventDefault();
-    // Stash the event so it can be triggered later.
-    deferredPrompt = event;
-  });
 
   async function handleLogIn() {
     if (username.length != 0 && password.length != 0) {

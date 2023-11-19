@@ -10,7 +10,7 @@ const PropertyList: React.FC<Props> = ({ propertyList }) => {
     <div>
       {propertyList.map((property: PropertyCard) => {
         return (
-          <PropertyDetails key={property.propertyId} property={property} />
+          <PropertyDetails key={property.ID} property={property} />
         );
       })}
     </div>

@@ -14,11 +14,12 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import debounce from "lodash/debounce";
 import NavbarBottom from "@components/NavbarBottom";
-import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import DeviceSupport from "@components/DeviceSupport";
 
-const ManagersList = () => {
+const ManagerList = () => {
   const [input, setInput] = useState("");
-
+  const { data: session } = useSession();
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
@@ -34,7 +35,6 @@ const ManagersList = () => {
   }, 850);
 
   const [value, setValue] = React.useState(0);
-
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -53,6 +53,7 @@ const ManagersList = () => {
     }
   };
 
+  const [isMobile, setIsMobile] = useState(true);
   const [datas, setData] = useState<
     | {
         firstname: string;
@@ -64,123 +65,126 @@ const ManagersList = () => {
         totalServiceRequests: number;
       }[]
   >([]);
-
-  const router = useRouter();
-
   useEffect(() => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (!isMobile) {
-      router.push("/device");
-    }
-  }, []);
-
-  useEffect(() => {
-    apiClient
-      .get(`/properties/avg?username=${input}`, apiHeader)
-      .then((response) => {
-        const extractedData = response.data.map((user: any) => {
-          const {
-            firstname,
-            lastname,
-            phone,
-            email,
-            userId,
-            averageRating,
-            totalServiceRequests,
-          } = user;
-          return {
-            firstname,
-            lastname,
-            phone,
-            email,
-            userId,
-            averageRating,
-            totalServiceRequests,
-          };
+    if (session) {
+      const mobileScreen = /iPhone|iPad|iPod|Android/i.test(
+        navigator.userAgent
+      );
+      if (!mobileScreen) {
+        setIsMobile(false);
+      }
+      apiClient
+        .get(`/properties/avg?username=${input}&flag=${true}`, apiHeader)
+        .then((response) => {
+          const extractedData = response.data.map((user: any) => {
+            const {
+              firstname,
+              lastname,
+              phone,
+              email,
+              userId,
+              averageRating,
+              totalServiceRequests,
+            } = user;
+            return {
+              firstname,
+              lastname,
+              phone,
+              email,
+              userId,
+              averageRating,
+              totalServiceRequests,
+            };
+          });
+          setData(extractedData);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
         });
-        setData(extractedData);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }, [input]);
+    }
+  }, [input, session, isMobile]);
 
   return (
-    <main>
-      <Navbar text="Managers" />
-      <div className=" mx-auto w-screen ">
-        <div className="mt-16 w-full mx-auto  flex flex-col items-center p-5 min-w-280">
-          <div className="relative flex items-center w-80 h-9 rounded-lg focus-within:shadow-lg bg-white overflow-hidden">
-            <div className="grid place-items-center h-full w-12 text-gray-300">
-              <SearchIcon />
-            </div>
+    <main className="min-h-screen flex flex-col">
+      {!isMobile && <DeviceSupport />}
+      {isMobile && (
+        <>
+          <Navbar text="Managers" />
+          <div className=" mx-auto w-screen ">
+            <div className="mt-16 w-full mx-auto  flex flex-col items-center p-5 min-w-280">
+              <div className="relative flex items-center w-80 h-9 rounded-lg focus-within:shadow-lg bg-white overflow-hidden">
+                <div className="grid place-items-center h-full w-12 text-gray-300">
+                  <SearchIcon />
+                </div>
 
-            <input
-              className="peer h-full w-full outline-none text-sm text-gray-700 pr-2"
-              type="text"
-              id="search"
-              placeholder="Search something.."
-              onChange={handleInput}
-            />
-          </div>
-
-          <div className="flex-col justify-start mt-2 w-80 text-sm min-w-280">
-            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-              <div className="flex justify-start">
-                <p>Sort based on Rating</p>
+                <input
+                  className="peer h-full w-full outline-none text-sm text-gray-700 pr-2"
+                  type="text"
+                  id="search"
+                  placeholder="Search something.."
+                  onChange={handleInput}
+                />
               </div>
-              <Tabs
-                sx={{ height: "20px" }}
-                value={value}
-                onChange={handleChange}
-                aria-label="basic tabs example"
-              >
-                <Tab
-                  label="Highest rating"
-                  className=" px-1 py-0"
-                  sx={{ p: "0", height: "20px", textTransform: "none" }}
-                  onClick={() => {
-                    sortByRating("high");
-                  }}
-                />
-                <Tab
-                  label="Lowest rating"
-                  className=" px-1 py-0"
-                  sx={{ p: "0", height: "20px", textTransform: "none" }}
-                  onClick={() => {
-                    sortByRating("low");
-                  }}
-                />
-              </Tabs>
-            </Box>
-          </div>
 
-          <div className=" w-full p-3 mt-1 flex flex-col items-center">
-            <Box padding={"0 11px"}>
-              {datas ? (
-                datas.map((user: manager, item) => (
-                  <Link key={item} href={`user-details/${user.userId}`}>
-                    <ManagerCard managers={user} />
-                  </Link>
-                ))
-              ) : (
-                <Backdrop
-                  sx={{
-                    color: "#fff",
-                    zIndex: (theme) => theme.zIndex.drawer + 1,
-                  }}
-                  open={true}
-                >
-                  <CircularProgress color="inherit" />
-                </Backdrop>
-              )}
-            </Box>
+              <div className="flex-col justify-start mt-2 w-80 text-sm min-w-280">
+                <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                  <div className="flex justify-start">
+                    <p>Sort based on Rating</p>
+                  </div>
+                  <Tabs
+                    sx={{ height: "20px" }}
+                    value={value}
+                    onChange={handleChange}
+                    aria-label="basic tabs example"
+                  >
+                    <Tab
+                      label="Highest rating"
+                      className=" px-1 py-0"
+                      sx={{ p: "0", height: "20px", textTransform: "none" }}
+                      onClick={() => {
+                        sortByRating("high");
+                      }}
+                    />
+                    <Tab
+                      label="Lowest rating"
+                      className=" px-1 py-0"
+                      sx={{ p: "0", height: "20px", textTransform: "none" }}
+                      onClick={() => {
+                        sortByRating("low");
+                      }}
+                    />
+                  </Tabs>
+                </Box>
+              </div>
+
+              <div className=" w-full p-3 mt-1 flex flex-col items-center">
+                <Box padding={"0 11px"}>
+                  {datas ? (
+                    datas.map((user: manager, item) => (
+                      <Link key={item} href={`user-details/${user.userId}`}>
+                        <ManagerCard managers={user} />
+                      </Link>
+                    ))
+                  ) : (
+                    <Backdrop
+                      sx={{
+                        color: "#fff",
+                        zIndex: (theme) => theme.zIndex.drawer + 1,
+                      }}
+                      open={true}
+                    >
+                      <CircularProgress color="inherit" />
+                    </Backdrop>
+                  )}
+                </Box>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <NavbarBottom page="" />
+          <NavbarBottom page="" />
+        </>
+      )}
     </main>
   );
 };
 
-export default ManagersList;
+export default ManagerList;

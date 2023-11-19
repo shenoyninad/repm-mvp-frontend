@@ -214,8 +214,11 @@ const AddReminder: React.FC<Props> = (props) => {
                 className="w-full"
                 id="request-message"
                 label="Message"
+                multiline
+                minRows={3}
                 variant="standard"
                 name="message"
+                // due to multiline view changing in a bad way, handle margin top
                 value={formDatas.message}
                 onChange={handleChange}
               />
@@ -227,6 +230,8 @@ const AddReminder: React.FC<Props> = (props) => {
                 className="w-full"
                 id="request-address"
                 label="Description"
+                multiline
+                minRows={3}
                 variant="standard"
                 name="description"
                 value={props.propertyDescription}

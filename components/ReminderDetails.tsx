@@ -7,7 +7,6 @@ import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import MobileStepper from "@mui/material/MobileStepper";
-import Paper from "@mui/material/Paper";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import apiClient from "@shared/utility/api-util";
@@ -44,7 +43,7 @@ export default function ReminderDetails() {
 
       getUserProfile(session?.user?.email);
     }
-  }, []);
+  }, [session]);
 
   const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);

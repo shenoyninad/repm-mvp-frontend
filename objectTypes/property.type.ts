@@ -1,10 +1,10 @@
 export interface PropertyCard {
-  propertyId: number;
+  ID: number;
   name: string;
   address: string;
   description: string;
   pincode: string;
-  propertyType: string;
+  type: string;
   image: string;
   roleType: string;
   propertyManager?: string;

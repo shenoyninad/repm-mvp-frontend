@@ -197,6 +197,8 @@ const AssignPropety: React.FC<Props> = (props) => {
                 className="w-full mt-2"
                 id="request-address"
                 label="Description"
+                multiline
+                minRows={3}
                 variant="standard"
                 name="description"
                 value={String(props.propertyDescription)}

@@ -17,7 +17,7 @@ interface Props {
   userType: string | undefined;
   serviceLogs?: ServiceRequests["ServiceRequestLogs"];
   documents?: {
-    documentId: number;
+    ID: number;
     name: string;
     content: {
       type: Buffer;
@@ -98,7 +98,7 @@ const ServiceRequest: React.FC<Props> = ({
 
           <Box sx={{ pl: 1, pr: 1 }}>
             {serviceLogs.map((log) => (
-              <div className="p-4" key={log.serviceRequestLogId}>
+              <div className="p-4" key={log.ID}>
                 <Grid container spacing={1} alignItems="center">
                   <Grid item xs={8}>
                     <Typography className="text-sm" component="div">
@@ -166,7 +166,7 @@ const ServiceRequest: React.FC<Props> = ({
           </Typography>
           <Box sx={{ pl: 1, pr: 1 }}>
             {documents.map((doc) => (
-              <div className="p-4" key={doc.documentId}>
+              <div className="p-4" key={doc.ID}>
                 <Grid
                   container
                   spacing={1}

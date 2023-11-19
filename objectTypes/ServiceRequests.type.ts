@@ -1,5 +1,5 @@
 export interface ServiceRequests {
-  serviceRequestId: number;
+  ID: number;
   propertyId: number;
   type: string;
   requestDate: string;
@@ -16,8 +16,8 @@ export interface ServiceRequests {
   updatedAt: string;
 
   Property: {
-    propertyId: number;
-    propertyType: string;
+    ID: number;
+    type: string;
     name: string;
     address: string;
     description: string;
@@ -38,7 +38,7 @@ export interface ServiceRequests {
     };
 
     PropertyManager: {
-      propertyManagerId: number;
+      ID: number;
       propertyId: number;
       managerId: number;
       startdate: string;
@@ -55,7 +55,7 @@ export interface ServiceRequests {
     };
   };
   Documents: {
-    documentId: number;
+    ID: number;
     name: string;
     content: {
       type: Buffer;
@@ -63,7 +63,7 @@ export interface ServiceRequests {
     };
   }[];
   ServiceRequestLogs: {
-    serviceRequestLogId: number;
+    ID: number;
     type: string;
     startDate: string;
     endDate: string;

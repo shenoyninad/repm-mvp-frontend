@@ -13,6 +13,8 @@ import { apiHeader } from "@config/config";
 import Navbar from "@components/Navbar";
 import servicerequestImage from "@public/images/ServiceRequest.jpg";
 import NavbarBottom from "@components/NavbarBottom";
+import { useSession } from "next-auth/react";
+import DeviceSupport from "@components/DeviceSupport";
 
 interface Props {
   params: any;
@@ -20,6 +22,7 @@ interface Props {
 
 const CreateServiceRequest: React.FC<Props> = ({ params }) => {
   const propertyId = parseInt(params.id);
+  const [isMobile, setIsMobile] = useState(true);
   const [datas, setData] = useState<{
     managerName: string;
     name: string;
@@ -36,30 +39,32 @@ const CreateServiceRequest: React.FC<Props> = ({ params }) => {
     priorityError: false,
     descriptionError: false,
     typeError: false,
+    imageError: false,
   });
-
   const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (!isMobile) {
-      router.push("/device");
+    if (session) {
+      const mobileScreen = /iPhone|iPad|iPod|Android/i.test(
+        navigator.userAgent
+      );
+      if (!mobileScreen) {
+        setIsMobile(false);
+      }
+      apiClient
+        .get(`/properties?propertyId=${propertyId}`, apiHeader)
+        .then((response) => {
+          const { name, description, address } = response.data;
+          const { firstname, lastname } = response.data.PropertyManager.Manager;
+          const managerName = firstname + " " + lastname;
+          setData({ name, description, managerName, address });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     }
-  }, []);
-
-  useEffect(() => {
-    apiClient
-      .get(`/properties?propertyId=${propertyId}`, apiHeader)
-      .then((response) => {
-        const { name, description, address } = response.data;
-        const { firstname, lastname } = response.data.PropertyManager.Manager;
-        const managerName = firstname + " " + lastname;
-        setData({ name, description, managerName, address });
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }, []);
+  }, [session, isMobile]);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | undefined>(
@@ -78,6 +83,7 @@ const CreateServiceRequest: React.FC<Props> = ({ params }) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         setImagePreview(event.target?.result as string);
+        setError((prevError) => ({ ...prevError, imageError: false }));
       };
       reader.readAsDataURL(e.target.files[0]);
     }
@@ -116,83 +122,20 @@ const CreateServiceRequest: React.FC<Props> = ({ params }) => {
       if (serviceData.type === "") {
         setError((prevError) => ({ ...prevError, typeError: true }));
       }
+      if (selectedFile === null) {
+        setError((prevError) => ({ ...prevError, imageError: true }));
+      }
     }
   };
 
   return (
     <main className="w-auto min-h-screen">
-      <Navbar text="Create Service Request" />
-      <div className=" mx-auto w-screen ">
-        <div className="mt-4 w-full p-12 pb-2 flex flex-col items-center">
-          {datas ? (
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                p: 2,
-                justifyContent: "space-between",
-              }}
-              className="relative"
-            >
-              <Typography
-                className="text-sm"
-                component="div"
-                variant="h6"
-                sx={{ mb: 1 }}
-              >
-                <b>Request for {datas.name}</b>
-              </Typography>
-              <Typography
-                className="text-sm"
-                component="div"
-                variant="h6"
-                sx={{ mb: 1 }}
-              >
-                <b>Location: </b>
-                {datas.address}
-              </Typography>
-            </Box>
-          ) : (
-            <></>
-          )}
-
-          <Box padding={"0 11px"}>
-            <div className="w-80">
-              <Card
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                className="rounded-lg font-mono"
-              >
-                <img
-                  src={imagePreview}
-                  alt="Image Preview"
-                  style={{ maxWidth: "100%", maxHeight: "100%" }}
-                  className="object-cover"
-                />
-              </Card>
-              <div className="relative mt-2 mb-2 w-1/2 mx-auto flex flex-col items-center">
-                <input
-                  style={{ display: "none" }}
-                  id="upload-sr-file"
-                  type="file"
-                  onChange={handleFileChange}
-                />
-                <label htmlFor="upload-sr-file">
-                  <Button
-                    component="span"
-                    className="bg-[#3085D2] w-52 mt-5"
-                    sx={{ textTransform: "none" }}
-                    variant="contained"
-                    disableElevation
-                  >
-                    Upload an image
-                  </Button>
-                </label>
-              </div>
+      {!isMobile && <DeviceSupport />}
+      {isMobile && (
+        <>
+          <Navbar text="Create Service Request" />
+          <div className=" mx-auto w-screen ">
+            <div className="mt-4 w-full p-12 pb-2 flex flex-col items-center">
               {datas ? (
                 <Box
                   sx={{
@@ -202,7 +145,7 @@ const CreateServiceRequest: React.FC<Props> = ({ params }) => {
                     p: 2,
                     justifyContent: "space-between",
                   }}
-                  className="relative mt-4"
+                  className="relative"
                 >
                   <Typography
                     className="text-sm"
@@ -210,93 +153,176 @@ const CreateServiceRequest: React.FC<Props> = ({ params }) => {
                     variant="h6"
                     sx={{ mb: 1 }}
                   >
-                    <p>
-                      <b>Managed By: </b>
-                      {datas?.managerName}
-                    </p>
+                    <b>Request for {datas.name}</b>
+                  </Typography>
+                  <Typography
+                    className="text-sm"
+                    component="div"
+                    variant="h6"
+                    sx={{ mb: 1 }}
+                  >
+                    <b>Location: </b>
+                    {datas.address}
                   </Typography>
                 </Box>
               ) : (
                 <></>
               )}
-              <Box
-                component="form"
-                className="flex-col items-center justify-center bg-white p-5 rounded-lg shadow-lg lg:w-auto"
-              >
-                <div className="relative mb-2">
-                  <TextField
-                    select
-                    className="w-full text-sm"
-                    id="request-type"
-                    label="Type"
-                    variant="standard"
-                    name="type"
-                    error={errors.typeError}
-                    helperText={
-                      errors.typeError ? "This field is required" : ""
-                    }
-                    value={serviceData.type}
-                    onChange={handleChange}
+
+              <Box padding={"0 11px"}>
+                <div className="w-80">
+                  <Card
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    className="rounded-lg font-mono"
                   >
-                    <MenuItem value="Plumbing">Plumbing</MenuItem>
-                    <MenuItem value="Electrical">Electrical</MenuItem>
-                    <MenuItem value="Paperwork">Paperwork</MenuItem>
-                    <MenuItem value="Painting">Painting</MenuItem>
-                    <MenuItem value="Civil">Civil</MenuItem>
-                  </TextField>
-                </div>
-                <div className="relative mb-2">
-                  <TextField
-                    className="w-full"
-                    id="request-description"
-                    label="Description"
-                    variant="standard"
-                    name="description"
-                    error={errors.descriptionError}
-                    helperText={
-                      errors.descriptionError ? "description is required" : ""
-                    }
-                    value={serviceData.description}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="relative mb-2">
-                  <TextField
-                    select
-                    className="w-full"
-                    id="request-priority"
-                    label="Priority"
-                    variant="standard"
-                    name="priority"
-                    error={errors.priorityError}
-                    helperText={
-                      errors.priorityError ? "This field is required" : ""
-                    }
-                    value={serviceData.priority}
-                    onChange={handleChange}
+                    <img
+                      src={imagePreview}
+                      alt="Image Preview"
+                      style={{ maxWidth: "100%", maxHeight: "100%" }}
+                      className="object-cover"
+                    />
+                  </Card>
+                  <div className="relative mt-2 mb-2 w-1/2 mx-auto flex flex-col items-center">
+                    <TextField
+                      style={{ display: "none" }}
+                      id="upload-sr-file"
+                      type="file"
+                      name="image"
+                      onChange={handleFileChange}
+                    ></TextField>
+                    <label htmlFor="upload-sr-file">
+                      <Button
+                        component="span"
+                        className="bg-[#3085D2] w-52 mt-5"
+                        sx={{ textTransform: "none" }}
+                        variant="contained"
+                        disableElevation
+                      >
+                        Upload an image
+                      </Button>
+                      <span>
+                        {errors.imageError && (
+                          <p className=" text-red-700 text-xs">
+                            Please select an image
+                          </p>
+                        )}
+                      </span>
+                    </label>
+                  </div>
+                  {datas ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        p: 2,
+                        justifyContent: "space-between",
+                      }}
+                      className="relative mt-4"
+                    >
+                      <Typography
+                        className="text-sm"
+                        component="div"
+                        variant="h6"
+                        sx={{ mb: 1 }}
+                      >
+                        <p>
+                          <b>Managed By: </b>
+                          {datas?.managerName}
+                        </p>
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <></>
+                  )}
+                  <Box
+                    component="form"
+                    className="flex-col items-center justify-center bg-white p-5 rounded-lg shadow-lg lg:w-auto"
                   >
-                    <MenuItem value="High">High</MenuItem>
-                    <MenuItem value="Medium">Medium</MenuItem>
-                    <MenuItem value="Low">Low</MenuItem>
-                  </TextField>
+                    <div className="relative mb-2">
+                      <TextField
+                        select
+                        className="w-full text-sm"
+                        id="request-type"
+                        label="Type"
+                        variant="standard"
+                        name="type"
+                        error={errors.typeError}
+                        helperText={
+                          errors.typeError ? "This field is required" : ""
+                        }
+                        value={serviceData.type}
+                        onChange={handleChange}
+                      >
+                        <MenuItem value="Plumbing">Plumbing</MenuItem>
+                        <MenuItem value="Electrical">Electrical</MenuItem>
+                        <MenuItem value="Paperwork">Paperwork</MenuItem>
+                        <MenuItem value="Painting">Painting</MenuItem>
+                        <MenuItem value="Civil">Civil</MenuItem>
+                      </TextField>
+                    </div>
+                    <div className="relative mb-2">
+                      <TextField
+                        className="w-full"
+                        id="standard-textarea"
+                        label="Description"
+                        multiline
+                        minRows={3}
+                        variant="standard"
+                        name="description"
+                        error={errors.descriptionError}
+                        helperText={
+                          errors.descriptionError
+                            ? "description is required"
+                            : ""
+                        }
+                        value={serviceData.description}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="relative mb-2">
+                      <TextField
+                        select
+                        className="w-full"
+                        id="request-priority"
+                        label="Priority"
+                        variant="standard"
+                        name="priority"
+                        error={errors.priorityError}
+                        helperText={
+                          errors.priorityError ? "This field is required" : ""
+                        }
+                        value={serviceData.priority}
+                        onChange={handleChange}
+                      >
+                        <MenuItem value="High">High</MenuItem>
+                        <MenuItem value="Medium">Medium</MenuItem>
+                        <MenuItem value="Low">Low</MenuItem>
+                      </TextField>
+                    </div>
+                  </Box>
+                </div>
+                <div className="container mt-5 w-full flex flex-col items-center pb-2">
+                  <Button
+                    className="bg-[#3085D2] w-52 mb-16"
+                    sx={{ textTransform: "none" }}
+                    variant="contained"
+                    disableElevation
+                    onClick={handleSubmit}
+                  >
+                    Save & Notify Manager
+                  </Button>
                 </div>
               </Box>
             </div>
-            <div className="container mt-5 w-full flex flex-col items-center pb-2">
-              <Button
-                className="bg-[#3085D2] w-52 mb-16"
-                sx={{ textTransform: "none" }}
-                variant="contained"
-                disableElevation
-                onClick={handleSubmit}
-              >
-                Save & Notify Manager
-              </Button>
-            </div>
-          </Box>
-        </div>
-      </div>
-      <NavbarBottom page="" />
+          </div>
+          <NavbarBottom page="" />
+        </>
+      )}
     </main>
   );
 };

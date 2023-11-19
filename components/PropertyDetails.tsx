@@ -15,7 +15,7 @@ interface Props {
 const PropertyDetails: React.FC<Props> = ({ property }) => {
   return (
     <div className="flex flex-col mt-4 w-full">
-      <Link href={`/properties/${property.propertyId}`}>
+      <Link href={`/properties/${property.ID}`}>
         <Card
           sx={{ display: "flex" }}
           className="w-custom rounded-lg font-mono h-min shadow-lg"
@@ -40,7 +40,7 @@ const PropertyDetails: React.FC<Props> = ({ property }) => {
                 </b>
               </Typography>
               <Typography className="text-sm mt-1" component="div" variant="h6">
-                {`${property.propertyType} ${property.description}`}
+                {`${property.type} ${property.description}`}
               </Typography>
               <Typography className="mb-2" variant="caption" component="div">
                 {`${property.address}, ${property.pincode}`}

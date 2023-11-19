@@ -14,14 +14,17 @@ export const metadata: Metadata = {
   description: "Real Estate Portfolio Management",
   generator: "Next.js",
   manifest: "/manifest.json",
-  keywords: ["nextjs", "nextjs13", "next13", "pwa", "next-pwa"],
-  themeColor: [{ media: "(prefers-color-scheme: dark)", color: "#fff" }],
-  authors: [
-    {
-      name: "Ninad Shenoy",
-      url: "https://www.linkedin.com/in/raazeshp96/",
-    },
+  keywords: [
+    "real estate",
+    "management",
+    "portfolio",
+    "nextjs",
+    "nextjs13",
+    "next13",
+    "pwa",
+    "next-pwa",
   ],
+  themeColor: [{ media: "(prefers-color-scheme: dark)", color: "#fff" }],
   viewport:
     "minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover",
   icons: [

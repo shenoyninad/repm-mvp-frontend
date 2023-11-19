@@ -242,6 +242,8 @@ const ModalForm: React.FC<Props> = ({ type, id }: Props) => {
                   className="w-full"
                   id="request-description"
                   label="Description"
+                  multiline
+                  minRows={3}
                   variant="standard"
                   name="description"
                   value={formDatas.description}
