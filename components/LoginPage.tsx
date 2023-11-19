@@ -13,10 +13,14 @@ import Backdrop from "@mui/material/Backdrop";
 import apiClient from "@shared/utility/api-util";
 import { signIn } from "next-auth/react";
 import DeviceSupport from "./DeviceSupport";
+import { IconButton, Snackbar } from "@mui/material";
+import React from "react";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
   const [loader, setLoader] = useState(false);
   const [error, setError] = useState({
@@ -25,6 +29,7 @@ export default function LoginPage() {
     errorMessage: "",
   });
   const router = useRouter();
+  let deferredPrompt: any;
 
   function validateEmail(email: any) {
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}$/;
@@ -35,8 +40,33 @@ export default function LoginPage() {
     const mobileScreen = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     if (!mobileScreen) {
       setIsMobile(false);
+    } else {
+      setSnackbarOpen(true);
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        listenToUserAction();
+      });
     }
   }, [isMobile]);
+
+  function listenToUserAction() {
+    const installBtn = document.getElementById("install-btn");
+    if (installBtn) {
+      installBtn.addEventListener("click", presentAddToHome);
+    }
+  }
+
+  function presentAddToHome() {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choice: any) => {
+      if (choice.outcome === "accepted") {
+        console.log("User accepted");
+      } else {
+        console.log("User dismissed");
+      }
+    });
+  }
 
   async function handleLogIn() {
     if (username.length != 0 && password.length != 0) {
@@ -100,6 +130,38 @@ export default function LoginPage() {
     }
   }
 
+  const handleSnackbarClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setSnackbarOpen(false);
+  };
+
+  const action = (
+    <React.Fragment>
+      <Button
+        className="capitalize text-white"
+        size="small"
+        id="install-btn"
+        onClick={handleSnackbarClose}
+      >
+        Install
+      </Button>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleSnackbarClose}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
+
   return (
     <main className="flex min-h-screen flex-col items-center">
       {!isMobile && <DeviceSupport />}
@@ -129,6 +191,13 @@ export default function LoginPage() {
                   <div className="flex flex-col items-center">
                     <p className="text-sm mb-4">Login to your account</p>
                   </div>
+                  <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={handleSnackbarClose}
+                    message="Do you want to install REPM?"
+                    action={action}
+                  />
                   <div className="relative mt-2 mb-4">
                     <TextField
                       error={error.usernameError}
